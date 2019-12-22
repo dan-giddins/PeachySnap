@@ -14,7 +14,7 @@ namespace TripleSnap
 		// half deck (rounded down)
 		private const int SecondHalf = NumberOfCards - FirstHalf;
 		private const int SuitSize = 13;
-		//private const int NumberOfGames = 100000;
+		private const int HandSize = 3;
 
 		static void Main()
 		{
@@ -37,7 +37,25 @@ namespace TripleSnap
 				}
 				roundLengths.Add(roundCounter);
 				Console.Write($"Play again? (Y/N): ");
-				exit = Console.ReadKey().ToString().ToUpper() == "N" ? true : false;
+				var valid = false;
+				while (!valid)
+				{
+					var input = Console.ReadLine().ToUpper();
+					if (input == "Y")
+					{
+						exit = false;
+						valid = true;
+					}
+					else if (input == "N")
+					{
+						exit = true;
+						valid = true;
+					}
+					else
+					{
+						Console.Write("Please enter either Y or N:");
+					}
+				}
 			}
 			PrintStats(gameCounter, aWins, roundLengths);
 			WriteCsv(roundLengths);
@@ -77,22 +95,23 @@ namespace TripleSnap
 			var handB = new List<int>();
 			var roundCounter = 0;
 			// draw to three
-			NewMethod(deckA, handA);
+			DrawToFull(deckA, handA);
+			DrawToFull(deckB, handB);
 			// play game
 			while (handA.Any() && handB.Any())
 			{
 				roundCounter++;
-				Move(deckA, table, handA);
-				Move(deckB, table, handB);
+				Move(deckA, table, handA, "A");
+				Move(deckB, table, handB, "B");
 			}
 			return (winner: deckA.Any() ? "A" : "B", roundCounter);
 		}
 
-		private static void NewMethod(Queue<int> deckA, List<int> handA)
+		private static void DrawToFull(Queue<int> deck, List<int> hand)
 		{
-			while (handA.Count < 3 && deckA.Any())
+			while (hand.Count < HandSize && deck.Any())
 			{
-				handA.Add(deckA.Dequeue());
+				hand.Add(deck.Dequeue());
 			}
 		}
 
@@ -130,8 +149,39 @@ namespace TripleSnap
 			Console.WriteLine();
 		}
 
-		private static void Move(Queue<int> deck, List<int> table, List<int> hand)
+		private static void Move(Queue<int> deck, List<int> table, List<int> hand, string player)
 		{
+			Console.WriteLine($"Table: {table.ToString()}");
+			Console.WriteLine($"Hand: {hand.ToString()}");
+			int card;
+			if (hand.Count() > 1)
+			{
+				Console.Write($"Player {player} to move (1-{HandSize}): ");
+				var valid = false;
+				int input = 0;
+				while (!valid)
+				{
+					if (int.TryParse(Console.ReadLine(), out input))
+					{
+						if (input > 0 && input < HandSize + 1)
+						{
+							valid = true;
+						}
+					}
+					else
+					{
+						Console.Write("Please enter a valid number: ");
+					}
+				}
+				var index = input - 1;
+				card = hand[index];
+				hand.RemoveAt(index);
+			}
+			else
+			{
+				card = hand.First();
+				hand.RemoveAt(0);
+			}
 			// get the index of the card with the same number
 			var rangeIndex = table.IndexOf(card);
 			// add card to the table
@@ -148,6 +198,8 @@ namespace TripleSnap
 				// add cards to hand
 				range.ForEach(x => deck.Enqueue(x));
 			}
+			// draw back up to three
+			DrawToFull(deck, hand);
 		}
 	}
 }
