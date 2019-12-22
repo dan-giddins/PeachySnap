@@ -23,6 +23,7 @@ namespace PeachySnap
 			var gameCounter = 0;
 			var aWins = 0;
 			var roundLengths = new List<int>();
+			Console.WriteLine($"Playing games...");
 			while (gameCounter < NumberOfGames)
 			{
 				gameCounter++;
@@ -36,7 +37,12 @@ namespace PeachySnap
 			}
 			Console.WriteLine($"After {NumberOfGames} games...");
 			Console.WriteLine($"A won {aWins} times ({aWins / (float) NumberOfGames * 100}%)");
-			Console.WriteLine($"Average round length: {roundLengths.Average()}");
+			var min = roundLengths.Min();
+			Console.WriteLine($"Quickest round length: {min} ({roundLengths.Where(x => x == min).Count()})");
+			Console.WriteLine($"Mode round length: {roundLengths.GroupBy(x => x).OrderByDescending(x => x.Count()).First().Key}");
+			Console.WriteLine($"Median round length: {roundLengths.OrderByDescending(x => x).ToList()[NumberOfGames/2]}");
+			Console.WriteLine($"Mean round length: {roundLengths.Average()}");
+			Console.WriteLine($"Longest round length: {roundLengths.Max()}");
 			var csv = string.Empty;
 			roundLengths.ForEach(x => csv += $"{x},");
 			csv = csv[..^1];
