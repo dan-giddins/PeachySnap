@@ -16,6 +16,7 @@ namespace TripleSnap
 		private const int SuitSize = 13;
 		private const int HandSize = 3;
 		private const bool AutoPlay = false;
+		private const bool PlayCpu = true;
 
 		static void Main()
 		{
@@ -136,19 +137,17 @@ namespace TripleSnap
 
 		private static void PrintDecks(Queue<int> deckA, Queue<int> deckB)
 		{
-			Console.WriteLine("Player A's cards:");
-			Console.Write(string.Join(", ", deckA));
-			Console.WriteLine("Player B's cards:");
-			Console.Write(string.Join(", ", deckB));
+			Console.WriteLine($"Player A's cards: {string.Join(", ", deckA)}");
+			Console.WriteLine($"Player B's cards: {string.Join(", ", deckB)}");
 		}
 
 		private static void Move(Queue<int> deck, List<int> table, List<int> hand, string player)
 		{
-			Console.WriteLine($"\nTable: {string.Join(", ", table)}");
-			Console.WriteLine($"Hand: {string.Join(", ", hand)}");
 			int index;
-			if (!AutoPlay && hand.Count() > 1)
+			if (!AutoPlay && !(PlayCpu && player == "B") && hand.Count() > 1)
 			{
+				Console.WriteLine($"\nTable: {string.Join(", ", table)}");
+				Console.WriteLine($"Hand: {string.Join(", ", hand)}");
 				Console.Write($"Player {player} to move (1-{hand.Count()}): ");
 				var valid = false;
 				var input = 0;
