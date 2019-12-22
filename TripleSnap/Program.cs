@@ -67,7 +67,7 @@ namespace TripleSnap
 
 		private static void WriteCsv(List<int> roundLengths, string path)
 		{
-			Console.WriteLine($"Writing round lenghts to {path}...");
+			Console.WriteLine($"Writing round lenghts to {path} ...");
 			File.WriteAllText(path, string.Join(",", roundLengths)[..^1]);
 		}
 
