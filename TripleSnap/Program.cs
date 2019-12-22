@@ -15,6 +15,7 @@ namespace TripleSnap
 		private const int SecondHalf = NumberOfCards - FirstHalf;
 		private const int SuitSize = 13;
 		private const int HandSize = 3;
+		private const bool AutoPlay = false;
 
 		static void Main()
 		{
@@ -29,12 +30,14 @@ namespace TripleSnap
 			while (!exit)
 			{
 				gameCounter++;
+				Console.WriteLine($"\nGame {gameCounter}");
 				// play game
 				(var winner, var roundCounter) = PlayAGame(cards.ToList());
 				if (winner == "A")
 				{
 					aWins++;
 				}
+				Console.WriteLine($"\nPlayer {winner} wins!");
 				roundLengths.Add(roundCounter);
 				Console.Write($"Play again? (Y/N): ");
 				var valid = false;
@@ -58,20 +61,18 @@ namespace TripleSnap
 				}
 			}
 			PrintStats(gameCounter, aWins, roundLengths);
-			WriteCsv(roundLengths);
+			WriteCsv(roundLengths, @"C:\temp\rounds.csv");
 		}
 
-		private static void WriteCsv(List<int> roundLengths)
+		private static void WriteCsv(List<int> roundLengths, string path)
 		{
-			var csv = string.Empty;
-			roundLengths.ForEach(x => csv += $"{x},");
-			csv = csv[..^1];
-			File.WriteAllText(@"C:\temp\rounds.csv", csv);
+			Console.WriteLine($"Writing round lenghts to {path}...");
+			File.WriteAllText(path, string.Join(",", roundLengths)[..^1]);
 		}
 
 		private static void PrintStats(int gameCounter, int aWins, List<int> roundLengths)
 		{
-			Console.WriteLine($"After {gameCounter} games...");
+			Console.WriteLine($"\nAfter {gameCounter} games...");
 			Console.WriteLine($"A won {aWins} times ({aWins / (float) gameCounter * 100}%)");
 			var min = roundLengths.Min();
 			Console.WriteLine($"Quickest round length: {min} ({roundLengths.Where(x => x == min).Count()})");
@@ -136,52 +137,47 @@ namespace TripleSnap
 		private static void PrintDecks(Queue<int> deckA, Queue<int> deckB)
 		{
 			Console.WriteLine("Player A's cards:");
-			foreach (var card in deckA)
-			{
-				Console.Write($"{card} ");
-			}
-			Console.WriteLine();
+			Console.Write(string.Join(", ", deckA));
 			Console.WriteLine("Player B's cards:");
-			foreach (var card in deckB)
-			{
-				Console.Write($"{card} ");
-			}
-			Console.WriteLine();
+			Console.Write(string.Join(", ", deckB));
 		}
 
 		private static void Move(Queue<int> deck, List<int> table, List<int> hand, string player)
 		{
-			Console.WriteLine($"Table: {table.ToString()}");
-			Console.WriteLine($"Hand: {hand.ToString()}");
-			int card;
-			if (hand.Count() > 1)
+			Console.WriteLine($"\nTable: {string.Join(", ", table)}");
+			Console.WriteLine($"Hand: {string.Join(", ", hand)}");
+			int index;
+			if (!AutoPlay && hand.Count() > 1)
 			{
-				Console.Write($"Player {player} to move (1-{HandSize}): ");
+				Console.Write($"Player {player} to move (1-{hand.Count()}): ");
 				var valid = false;
-				int input = 0;
+				var input = 0;
 				while (!valid)
 				{
 					if (int.TryParse(Console.ReadLine(), out input))
 					{
-						if (input > 0 && input < HandSize + 1)
+						if (input > 0 && input < hand.Count() + 1)
 						{
 							valid = true;
+						}
+						else
+						{
+							Console.Write($"Please enter a valid number between 1 and {hand.Count()}: ");
 						}
 					}
 					else
 					{
-						Console.Write("Please enter a valid number: ");
+						Console.Write("Please enter a number: ");
 					}
 				}
-				var index = input - 1;
-				card = hand[index];
-				hand.RemoveAt(index);
+				index = input - 1;
 			}
 			else
 			{
-				card = hand.First();
-				hand.RemoveAt(0);
+				index = 0;
 			}
+			var card = hand[index];
+			hand.RemoveAt(index);
 			// get the index of the card with the same number
 			var rangeIndex = table.IndexOf(card);
 			// add card to the table
